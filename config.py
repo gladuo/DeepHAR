@@ -27,11 +27,14 @@ FILTER_SIZE = 5
 # Number of unit in the long short-term recurrent layers
 NUM_UNITS_LSTM = 128
 
+# Dropout rate
+DROPOUT_RATE = .5
+
 # Number of epoches
-NUM_EPOCHES = 20
+NUM_EPOCHES = 50
 
 # Number for model
-TEST_MODEL_NUMBER = 1492168028
+TEST_MODEL_NUMBER = 1492262778
 
 
 from keras import backend as K
