@@ -256,8 +256,7 @@ def generate_data(dataset, target_filename, label):
             print 'ERROR: Did not find {0} in zip file'.format(filename)
 
     # Dataset is segmented into train and test
-    # todo: delete the -100000
-    nb_training_samples = 557963 - 100000
+    nb_training_samples = 557963
     # The first 18 OPPORTUNITY data files define the traning dataset, comprising 557963 samples
     X_train, y_train = data_x[:nb_training_samples,:], data_y[:nb_training_samples]
     X_test, y_test = data_x[nb_training_samples:,:], data_y[nb_training_samples:]
