@@ -137,6 +137,31 @@ def adjust_idx_labels(data_y, label):
         Type of activities to be recognized
     :return: numpy integer array
         Modified sensor labels
+    
+    Labels:
+    
+    1   -   Locomotion   -   Stand
+    2   -   Locomotion   -   Walk
+    4   -   Locomotion   -   Sit
+    5   -   Locomotion   -   Lie
+
+    406516   -   ML_Both_Arms   -   Open Door 1
+    406517   -   ML_Both_Arms   -   Open Door 2
+    404516   -   ML_Both_Arms   -   Close Door 1
+    404517   -   ML_Both_Arms   -   Close Door 2
+    406520   -   ML_Both_Arms   -   Open Fridge
+    404520   -   ML_Both_Arms   -   Close Fridge
+    406505   -   ML_Both_Arms   -   Open Dishwasher
+    404505   -   ML_Both_Arms   -   Close Dishwasher
+    406519   -   ML_Both_Arms   -   Open Drawer 1
+    404519   -   ML_Both_Arms   -   Close Drawer 1
+    406511   -   ML_Both_Arms   -   Open Drawer 2
+    404511   -   ML_Both_Arms   -   Close Drawer 2
+    406508   -   ML_Both_Arms   -   Open Drawer 3
+    404508   -   ML_Both_Arms   -   Close Drawer 3
+    408512   -   ML_Both_Arms   -   Clean Table
+    407521   -   ML_Both_Arms   -   Drink from Cup
+    405506   -   ML_Both_Arms   -   Toggle Switch
     """
 
     if label == 'locomotion':  # Labels for locomotion are adjusted
@@ -210,7 +235,7 @@ def process_dataset_file(data, label):
     data = select_columns_opp(data)
 
     # Colums are segmentd into features and labels
-    data_x, data_y =  divide_x_y(data, label)
+    data_x, data_y = divide_x_y(data, label)
     data_y = adjust_idx_labels(data_y, label)
     data_y = data_y.astype(int)
 
@@ -286,6 +311,11 @@ def get_args():
     dataset = args.input
     target_filename = args.output
     label = args.task
+
+    # dataset = 'data/OpportunityUCIDataset.zip'
+    # target_filename = 'oppChallenge_gestures.data'
+    # label = 'gestures'
+
     # Return all variable values
     return dataset, target_filename, label
 
