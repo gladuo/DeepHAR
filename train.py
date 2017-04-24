@@ -9,7 +9,7 @@ from keras.layers import Input, Conv2D, GRU, LSTM, Dense, Dropout, Permute, Resh
 from keras.layers.merge import concatenate, add, dot
 from keras.models import Model
 import keras.backend as K
-from keras.optimizers import Adam
+from keras.optimizers import Adam, RMSprop
 from keras.regularizers import l1, l2
 from keras.callbacks import ModelCheckpoint
 from keras.utils.vis_utils import plot_model
@@ -37,18 +37,18 @@ def train():
     # network
     inputs = Input(shape=(1, SLIDING_WINDOW_LENGTH, NUM_SENSOR_CHANNELS))
     conv1 = ELU()(
-        Conv2D(filters=NUM_FILTERS, kernel_size=(1, FILTER_SIZE), strides=(1, 1), padding='valid', activation='relu',
-               kernel_initializer='normal', data_format='channels_last')(inputs))
+        Conv2D(filters=NUM_FILTERS, kernel_size=(1, FILTER_SIZE), strides=(1, 1), padding='same',
+               kernel_initializer='random_normal', data_format='channels_last')(inputs))
     conv2 = ELU()(
-        Conv2D(filters=NUM_FILTERS, kernel_size=(1, FILTER_SIZE), strides=(1, 1), padding='valid', activation='relu',
-               kernel_initializer='normal', data_format='channels_last')(conv1))
+        Conv2D(filters=NUM_FILTERS, kernel_size=(1, FILTER_SIZE), strides=(1, 1), padding='same',
+               kernel_initializer='random_normal', data_format='channels_last')(conv1))
     conv3 = ELU()(
-        Conv2D(filters=NUM_FILTERS, kernel_size=(1, FILTER_SIZE), strides=(1, 1), padding='valid', activation='relu',
-               kernel_initializer='normal', data_format='channels_last')(conv2))
+        Conv2D(filters=NUM_FILTERS, kernel_size=(1, FILTER_SIZE), strides=(1, 1), padding='same',
+               kernel_initializer='random_normal', data_format='channels_last')(conv2))
     conv4 = ELU()(
-        Conv2D(filters=NUM_FILTERS, kernel_size=(1, FILTER_SIZE), strides=(1, 1), padding='valid', activation='relu',
-               kernel_initializer='normal', data_format='channels_last')(conv3))
-    reshape1 = Reshape((FINAL_SEQUENCE_LENGTH, NUM_FILTERS * 1))(conv4)
+        Conv2D(filters=NUM_FILTERS, kernel_size=(1, FILTER_SIZE), strides=(1, 1), padding='same',
+               kernel_initializer='random_normal', data_format='channels_last')(conv3))
+    reshape1 = Reshape((SLIDING_WINDOW_LENGTH, NUM_FILTERS * 1))(conv4)
     dropout1 = Dropout(DROPOUT_RATE)(reshape1)
     gru1 = GRU(NUM_UNITS_LSTM, return_sequences=True, implementation=2)(dropout1)
     dropout2 = Dropout(DROPOUT_RATE)(gru1)
@@ -65,10 +65,11 @@ def train():
                                  verbose=1,
                                  save_best_only=True, mode='max')
     # Save model networks
-    json_string = model.to_json()
+    json_string = model.to_json(indent=4)
     open('./runs/%s/model_pickle.json' % timestamp, 'w').write(json_string)
 
     adam = Adam(lr=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    # rmsprop = RMSprop(lr=1e-4, rho=0.9, epsilon=1e-8)
     model.compile(optimizer=adam, loss='sparse_categorical_crossentropy', metrics=['acc'])
     model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=NUM_EPOCHES, verbose=1, callbacks=[checkpoint],
               validation_data=(X_test, y_test))  # starts training
