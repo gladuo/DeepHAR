@@ -4,11 +4,15 @@ import os
 import time
 import numpy as np
 
-from keras.layers import Input, Conv2D, GRU, LSTM, Dense, Permute, Reshape, Flatten, ELU
+import keras
+from keras.layers import Input, Conv2D, GRU, LSTM, Dense, Dropout, Permute, Reshape, Flatten, ELU
+from keras.layers.merge import concatenate, add, dot
 from keras.models import Model
 import keras.backend as K
 from keras.optimizers import Adam
+from keras.regularizers import l1, l2
 from keras.callbacks import ModelCheckpoint
+from keras.utils.vis_utils import plot_model
 
 from utils.load_dataset import load_dataset
 from utils.sliding_window import sliding_window, opp_sliding_window
@@ -44,12 +48,14 @@ def train():
     conv4 = ELU()(
         Conv2D(filters=NUM_FILTERS, kernel_size=(1, FILTER_SIZE), strides=(1, 1), padding='valid', activation='relu',
                kernel_initializer='normal', data_format='channels_last')(conv3))
-    # permute1 = Permute((2, 1, 3))(conv4)
     reshape1 = Reshape((FINAL_SEQUENCE_LENGTH, NUM_FILTERS * 1))(conv4)
-    gru1 = GRU(NUM_UNITS_LSTM, return_sequences=True, implementation=2)(reshape1)
-    gru2 = GRU(NUM_UNITS_LSTM, return_sequences=False, implementation=2)(gru1)  # implementation=2 for GPU
+    dropout1 = Dropout(DROPOUT_RATE)(reshape1)
+    gru1 = GRU(NUM_UNITS_LSTM, return_sequences=True, implementation=2)(dropout1)
+    dropout2 = Dropout(DROPOUT_RATE)(gru1)
+    gru2 = GRU(NUM_UNITS_LSTM, return_sequences=False, implementation=2)(dropout2)  # implementation=2 for GPU
+    dropout3 = Dropout(DROPOUT_RATE)(gru2)
 
-    outputs = Dense(NUM_CLASSES, activation=K.softmax)(gru2)
+    outputs = Dense(NUM_CLASSES, activation=K.softmax, activity_regularizer=l2())(dropout3)
 
     model = Model(inputs=inputs, outputs=outputs)
     # Save checkpoints
@@ -62,7 +68,7 @@ def train():
     json_string = model.to_json()
     open('./runs/%s/model_pickle.json' % timestamp, 'w').write(json_string)
 
-    adam = Adam(lr=1e-3, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    adam = Adam(lr=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
     model.compile(optimizer=adam, loss='sparse_categorical_crossentropy', metrics=['acc'])
     model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=NUM_EPOCHES, verbose=1, callbacks=[checkpoint],
               validation_data=(X_test, y_test))  # starts training
