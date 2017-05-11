@@ -24,11 +24,9 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
         yield inputs[excerpt], targets[excerpt]
 
 
-def test():
+def prepare_data():
     print("Loading data...")
     X_train, y_train, X_test, y_test = load_dataset('data/oppChallenge_gestures.data')
-
-    assert NUM_SENSOR_CHANNELS == X_train.shape[1]
 
     # Sensor data is segmented using a sliding window mechanism
     X_test, y_test = opp_sliding_window(X_test, y_test, SLIDING_WINDOW_LENGTH, SLIDING_WINDOW_STEP)
@@ -36,16 +34,23 @@ def test():
 
     # Data is reshaped since the input of the network is a 4 dimension tensor
     X_test = X_test.reshape((-1, 1, SLIDING_WINDOW_LENGTH, NUM_SENSOR_CHANNELS))
+    return X_test, y_test
+
+
+def test():
+    # Prepare data
+    X_test, y_test = prepare_data()
 
     # Load model
     json_string = open('./runs/{}/model_pickle.json'.format(str(TEST_MODEL_NUMBER)), 'r').read()
     model = models.model_from_json(json_string)
 
-    file_list = sorted(os.listdir('./runs/{}'.format(str(TEST_MODEL_NUMBER))))
-    weights_file = file_list[0] if file_list[0] is 'model_1_weights_sub.h5' else file_list[-1]
+    # Load weights
+    weights_file_list = sorted(os.listdir('./runs/{}'.format(str(TEST_MODEL_NUMBER))))
+    weights_file = weights_file_list[0] if weights_file_list[0] is 'model_1_weights_sub.h5' else weights_file_list[-1]
     model.load_weights('./runs/{}/{}'.format(str(TEST_MODEL_NUMBER), weights_file))
 
-    # Classification of the testing data
+    # Test model
     print("Processing {0} instances in mini-batches of {1}".format(X_test.shape[0], BATCH_SIZE))
     test_pred = np.empty(0)
     test_true = np.empty(0)

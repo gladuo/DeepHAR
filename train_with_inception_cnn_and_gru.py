@@ -5,8 +5,8 @@ import time
 import numpy as np
 
 import keras
-from keras.layers import Input, Conv2D, MaxPooling2D, AvgPool2D, Flatten, GRU, LSTM, Dense, Dropout, Permute, Reshape, \
-    Flatten, ELU, GlobalMaxPool2D
+from keras.layers import Input, Conv2D, MaxPooling2D, Flatten, GRU, LSTM, Dense, Dropout, Permute, Reshape, Flatten, \
+    ELU, GlobalMaxPool2D
 from keras.layers.merge import concatenate, add, dot
 from keras.models import Model
 import keras.backend as K
@@ -79,10 +79,10 @@ def train():
     conv4 = cnn_block(maxpool1)
     maxpool2 = MaxPooling2D(pool_size=(1, SLIDING_WINDOW_LENGTH / 2), strides=(1, 1), padding='valid',
                             data_format='channels_last')(conv4)
-    conv5 = ELU()(
-        Conv2D(filters=NUM_FILTERS*4, kernel_size=(1, 12), strides=(1, 1), padding='same',
-               kernel_initializer='random_normal', data_format='channels_last')(maxpool2))
-    reshape1 = Reshape((1, (SLIDING_WINDOW_LENGTH / 2 + 1) * NUM_FILTERS * 4))(conv5)
+    # conv5 = ELU()(
+    #     Conv2D(filters=NUM_FILTERS*4, kernel_size=(1, 12), strides=(1, 1), padding='same',
+    #            kernel_initializer='random_normal', data_format='channels_last')(maxpool2))
+    reshape1 = Reshape((1, (SLIDING_WINDOW_LENGTH - SLIDING_WINDOW_LENGTH / 2 + 1) * NUM_FILTERS * 4))(maxpool2)
     dropout1 = Dropout(DROPOUT_RATE)(reshape1)
     gru1 = GRU(NUM_UNITS_LSTM, return_sequences=True, implementation=2)(dropout1)
     dropout2 = Dropout(DROPOUT_RATE)(gru1)
@@ -96,9 +96,9 @@ def train():
     timestamp = str(int(time.time()))
     os.mkdir('./runs/%s/' % timestamp)
     checkpoint = ModelCheckpoint('./runs/%s/weights.{epoch:03d}-{val_acc:.4f}.hdf5' % timestamp, monitor='val_acc',
-                                 verbose=1,
-                                 save_best_only=True, mode='max')
-
+                                 verbose=1, mode='max'
+                                 # , save_best_only=True
+                                 )
     # Save model networks
     json_string = model.to_json(indent=4)
     open('./runs/%s/model_pickle.json' % timestamp, 'w').write(json_string)

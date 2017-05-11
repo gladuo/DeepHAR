@@ -13,13 +13,13 @@ SLIDING_WINDOW_LENGTH = 24
 FINAL_SEQUENCE_LENGTH = 8
 
 # Hardcoded step of the sliding window mechanism employed to segment the data
-SLIDING_WINDOW_STEP = SLIDING_WINDOW_LENGTH / 2
+SLIDING_WINDOW_STEP = 12
 
 # Batch Size
 BATCH_SIZE = 100
 
 # Number filters convolutional layers
-NUM_FILTERS = 128
+NUM_FILTERS = 64
 
 # Size filters convolutional layers
 FILTER_SIZE = 5
@@ -28,13 +28,13 @@ FILTER_SIZE = 5
 NUM_UNITS_LSTM = 128
 
 # Dropout rate
-DROPOUT_RATE = .2
+DROPOUT_RATE = .5
 
 # Number of epoches
 NUM_EPOCHES = 1000
 
 # Number for model
-TEST_MODEL_NUMBER = 1494296192
+TEST_MODEL_NUMBER = 1494275214
 
 
 from keras import backend as K
